@@ -18,10 +18,27 @@
         position: relative;
       }
 
+      .container {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: center;
+        width: 100%;
+        max-width: 1200px;
+        gap: 30px;
+      }
+
+      .main-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+      }
+
       .logo {
         margin-top: 20px;
         width: 300px;
-        max-width: 120%;
+        max-width: 100%;
       }
 
       .timer {
@@ -50,17 +67,12 @@
 
       button#start {
         background: white;
-        color: #ff7200;
+        color: black;
       }
 
       button#stop {
         background: black;
         color: white;
-      }
-
-      button#reset {
-        background: #e74c3c;
-        color: black;
       }
 
       button:hover {
@@ -97,12 +109,10 @@
         border-radius: 10px;
         padding: 10px;
         max-width: 230px;
+        max-height: 80vh;
         overflow-y: auto;
-        max-height: 70%;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-        position: absolute;
-        top: 20px;
-        right: 20px; /* десктоп - праворуч */
+        margin-top: 20px;
       }
 
       table {
@@ -140,6 +150,11 @@
       }
 
       @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+          align-items: center;
+        }
+
         .timer {
           font-size: 4rem;
           margin: 40px 0 10px 0;
@@ -165,10 +180,6 @@
         }
 
         .results {
-          position: relative; /* мобільна версія під кнопками */
-          top: auto;
-          right: auto;
-          margin-top: 20px;
           max-width: 90%;
           max-height: 200px;
         }
@@ -176,35 +187,40 @@
     </style>
   </head>
   <body>
-    <img src="Lapp_rgb.png" alt="Lapp Logo" class="logo" />
-    <div class="timer" id="timer">00:00:00</div>
+    <div class="container">
+      <div class="main-content">
+        <img src="Lapp_rgb.png" alt="Lapp Logo" class="logo" />
+        <div class="timer" id="timer">00:00:00</div>
 
-    <div class="buttons">
-      <button id="start" onclick="startTimer()">Старт</button>
-      <button id="stop" onclick="stopTimer()">Стоп</button>
-      <button id="reset" onclick="resetTimer()">Скинути</button>
-    </div>
+        <div class="buttons">
+          <button id="start" onclick="startTimer()">Старт</button>
+          <button id="stop" onclick="stopTimer()">Стоп</button>
+        </div>
 
-    <div class="form-container" id="formContainer">
-      <p style="color: white; text-shadow: 1px 1px 3px black">Введіть ім'я:</p>
-      <input type="text" id="nameInput" placeholder="Ваше ім'я" />
-      <br />
-      <button onclick="saveResult()">Зберегти</button>
-    </div>
+        <div class="form-container" id="formContainer">
+          <p style="color: white; text-shadow: 1px 1px 3px black">
+            Введіть ім'я:
+          </p>
+          <input type="text" id="nameInput" placeholder="Ваше ім'я" />
+          <br />
+          <button onclick="saveResult()">Зберегти</button>
+        </div>
+      </div>
 
-    <div class="results" id="resultsContainer">
-      <table>
-        <thead>
-          <tr>
-            <th>Імʼя</th>
-            <th>Результат</th>
-          </tr>
-        </thead>
-        <tbody id="resultsTable"></tbody>
-      </table>
-      <button id="clearResults" onclick="clearResults()">
-        Очистити результати
-      </button>
+      <div class="results" id="resultsContainer">
+        <table>
+          <thead>
+            <tr>
+              <th>Імʼя</th>
+              <th>Результат</th>
+            </tr>
+          </thead>
+          <tbody id="resultsTable"></tbody>
+        </table>
+        <button id="clearResults" onclick="clearResults()">
+          Очистити результати
+        </button>
+      </div>
     </div>
 
     <script>
@@ -245,14 +261,6 @@
         }
       }
 
-      function resetTimer() {
-        clearInterval(timerInterval);
-        running = false;
-        seconds = 0;
-        updateTimer();
-        document.getElementById("formContainer").style.display = "none";
-      }
-
       function addResultRow(name, time) {
         const tableBody = document.getElementById("resultsTable");
         const row = document.createElement("tr");
@@ -271,6 +279,9 @@
           savedResults.push({ name: name, time: finalTime });
           localStorage.setItem("results", JSON.stringify(savedResults));
 
+          // Скидання таймера після збереження
+          seconds = 0;
+          updateTimer();
           document.getElementById("formContainer").style.display = "none";
           document.getElementById("nameInput").value = "";
         }
