@@ -26,9 +26,9 @@
       }
 
       .timer {
-        font-size: 16rem;
+        font-size: 12rem;
         color: white;
-        /* text-shadow: 2px 2px 6px black; */
+        text-shadow: 2px 2px 6px black;
         margin: 40px 0 20px 0;
         text-align: center;
       }
@@ -92,18 +92,20 @@
         position: absolute;
         top: 20px;
         right: 20px;
-        background: rgba(255, 255, 255, 0.85);
+        background: white; /* фон таблиці білий */
         border-radius: 10px;
         padding: 10px;
         max-width: 230px;
         overflow-y: auto;
         max-height: 70%;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
       }
 
       table {
         width: 100%;
         border-collapse: collapse;
         font-size: 1rem;
+        background: white;
       }
 
       td,
@@ -115,6 +117,22 @@
 
       tr.min-time {
         background-color: #c2f0c2; /* зелена підсвітка для найменшого часу */
+      }
+
+      #clearResults {
+        margin-top: 10px;
+        width: 100%;
+        padding: 8px;
+        font-size: 1rem;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        background: #e74c3c;
+        color: white;
+      }
+
+      #clearResults:hover {
+        background: #c0392b;
       }
 
       @media (max-width: 768px) {
@@ -158,6 +176,9 @@
         </thead>
         <tbody id="resultsTable"></tbody>
       </table>
+      <button id="clearResults" onclick="clearResults()">
+        Очистити результати
+      </button>
     </div>
 
     <script>
@@ -238,7 +259,6 @@
 
         if (rows.length === 0) return;
 
-        // Перетворюємо час у секунди для порівняння
         let minSeconds = Infinity;
         let minRow = null;
         rows.forEach((r) => {
@@ -252,6 +272,11 @@
         });
 
         if (minRow) minRow.classList.add("min-time");
+      }
+
+      function clearResults() {
+        document.getElementById("resultsTable").innerHTML = "";
+        localStorage.removeItem("results");
       }
     </script>
   </body>
