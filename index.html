@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Таймер із формою</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: url("fon.jpg") no-repeat center center fixed;
+        background-size: cover;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        position: relative;
+      }
+
+      .logo {
+        margin-top: 20px;
+        width: 260px;
+        max-width: 70%;
+      }
+
+      .timer {
+        font-size: 16rem;
+        color: white;
+        /* text-shadow: 2px 2px 6px black; */
+        margin: 40px 0 20px 0;
+        text-align: center;
+      }
+
+      .buttons {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      button {
+        border: none;
+        padding: 15px 35px;
+        font-size: 1.6rem;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+
+      button#start {
+        background: white;
+        color: black;
+      }
+
+      button#stop {
+        background: black;
+        color: white;
+      }
+
+      button#reset {
+        background: white;
+        color: black;
+      }
+
+      button:hover {
+        transform: scale(1.05);
+      }
+
+      .form-container {
+        display: none;
+        margin-top: 10px;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.65);
+        padding: 15px;
+        border-radius: 12px;
+        max-width: 300px;
+      }
+
+      .form-container input {
+        padding: 8px;
+        font-size: 1rem;
+        width: 80%;
+        margin-bottom: 10px;
+        border-radius: 6px;
+        border: none;
+      }
+
+      .results {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.85);
+        border-radius: 10px;
+        padding: 10px;
+        max-width: 230px;
+        overflow-y: auto;
+        max-height: 70%;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 1rem;
+      }
+
+      td,
+      th {
+        border: 1px solid #000;
+        padding: 4px;
+        text-align: center;
+      }
+
+      tr.min-time {
+        background-color: #c2f0c2; /* зелена підсвітка для найменшого часу */
+      }
+
+      @media (max-width: 768px) {
+        .timer {
+          font-size: 4rem;
+        }
+        button {
+          font-size: 1.3rem;
+          padding: 12px 25px;
+        }
+        .logo {
+          width: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <img src="Lapp_cmyk.png" alt="Lapp Logo" class="logo" />
+    <div class="timer" id="timer">00:00:00</div>
+
+    <div class="buttons">
+      <button id="start" onclick="startTimer()">Старт</button>
+      <button id="stop" onclick="stopTimer()">Стоп</button>
+      <button id="reset" onclick="resetTimer()">Скинути</button>
+    </div>
+
+    <div class="form-container" id="formContainer">
+      <p style="color: white; text-shadow: 1px 1px 3px black">Введіть ім'я:</p>
+      <input type="text" id="nameInput" placeholder="Ваше ім'я" />
+      <br />
+      <button onclick="saveResult()">Зберегти</button>
+    </div>
+
+    <div class="results" id="resultsContainer">
+      <table>
+        <thead>
+          <tr>
+            <th>Імʼя</th>
+            <th>Результат</th>
+          </tr>
+        </thead>
+        <tbody id="resultsTable"></tbody>
+      </table>
+    </div>
+
+    <script>
+      let timerInterval;
+      let seconds = 0;
+      let running = false;
+      let finalTime = "";
+
+      // Завантаження збережених результатів
+      window.onload = function () {
+        const savedResults = JSON.parse(localStorage.getItem("results")) || [];
+        savedResults.forEach((r) => addResultRow(r.name, r.time));
+        highlightMinTime();
+      };
+
+      function updateTimer() {
+        let hrs = String(Math.floor(seconds / 3600)).padStart(2, "0");
+        let mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+        let secs = String(seconds % 60).padStart(2, "0");
+        document.getElementById("timer").textContent = `${hrs}:${mins}:${secs}`;
+      }
+
+      function startTimer() {
+        if (!running) {
+          running = true;
+          timerInterval = setInterval(() => {
+            seconds++;
+            updateTimer();
+          }, 1000);
+        }
+      }
+
+      function stopTimer() {
+        if (running) {
+          running = false;
+          clearInterval(timerInterval);
+          finalTime = document.getElementById("timer").textContent;
+          document.getElementById("formContainer").style.display = "block";
+        }
+      }
+
+      function resetTimer() {
+        clearInterval(timerInterval);
+        running = false;
+        seconds = 0;
+        updateTimer();
+        document.getElementById("formContainer").style.display = "none";
+      }
+
+      function addResultRow(name, time) {
+        const tableBody = document.getElementById("resultsTable");
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${name}</td><td>${time}</td>`;
+        tableBody.appendChild(row);
+        highlightMinTime();
+      }
+
+      function saveResult() {
+        const name = document.getElementById("nameInput").value;
+        if (name.trim() !== "") {
+          addResultRow(name, finalTime);
+
+          // Зберігаємо у localStorage
+          const savedResults =
+            JSON.parse(localStorage.getItem("results")) || [];
+          savedResults.push({ name: name, time: finalTime });
+          localStorage.setItem("results", JSON.stringify(savedResults));
+
+          document.getElementById("formContainer").style.display = "none";
+          document.getElementById("nameInput").value = "";
+        }
+      }
+
+      function highlightMinTime() {
+        const tableBody = document.getElementById("resultsTable");
+        const rows = Array.from(tableBody.querySelectorAll("tr"));
+        rows.forEach((r) => r.classList.remove("min-time"));
+
+        if (rows.length === 0) return;
+
+        // Перетворюємо час у секунди для порівняння
+        let minSeconds = Infinity;
+        let minRow = null;
+        rows.forEach((r) => {
+          const t = r.children[1].textContent.split(":");
+          const totalSec =
+            parseInt(t[0]) * 3600 + parseInt(t[1]) * 60 + parseInt(t[2]);
+          if (totalSec < minSeconds) {
+            minSeconds = totalSec;
+            minRow = r;
+          }
+        });
+
+        if (minRow) minRow.classList.add("min-time");
+      }
+    </script>
+  </body>
+</html>
